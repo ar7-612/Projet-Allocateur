@@ -11,6 +11,33 @@
 #include <assert.h>
 
 //-------------------------------------------------------------
+// Utilitaires (remplacer par Macros ou inline?)
+//-------------------------------------------------------------
+
+/**
+ * Return a pointer to the first free block
+ * or NULL if there is none
+**/
+fb* get_fb(){
+	return (fb_t*) *mem_space_get_addr();
+}
+
+/**
+ * Return a pointer to the first alocated block
+ * or NULL if there is none
+**/
+ab* get_ab(){
+	void * debutMem = mem_space_get_addr();
+	if(*debutMem==NULL || *debutMem!=(debutMem+sizeof(fb_t*)){
+		return (ab_t*) (debutMem+sizeof(fb_t*));
+	}
+	if((*debutMem)->size==mem_space_get_size() - sizeof(fb_t) - sizeof(fb_t*)){
+		return NULL;
+	}
+	return (ab_t*) debutMem + sizeof(fb_t) + sizeof(fb_t*) + (*debutMem)->size;
+}
+
+//-------------------------------------------------------------
 // mem_init
 //-------------------------------------------------------------
 /**
@@ -18,8 +45,15 @@
  * If already init it will re-init.
 **/
 void mem_init() {
-    //TODO: implement
-	assert(! "NOT IMPLEMENTED !");
+	void * debutMem = mem_space_get_addr();
+	//On cree le profier bloque de fb. 
+	fb_t bloqueVide = {mem_space_get_size() - sizeof(fb_t) - sizeof(fb_t*),NULL};
+	//On le stoque en debut de memoire en laissant la place pour un pointeur
+	*(debutMem+sizeof(fb_t*))=bloqueVide;
+	//On memorise son adresse dans l'espace qu'on a laisse au debut de la memoire
+	*debutMem = debutMem + (fb_t*);
+	//Et finalement on initialise la fonction de recherche
+	mem_set_fit_handler(mem_first_fit);
 }
 
 //-------------------------------------------------------------

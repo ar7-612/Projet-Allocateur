@@ -10,6 +10,18 @@
 
 #include <stddef.h>
 
+
+struct fb_s;
+struct ab_s;
+typedef struct fb_s {
+	size_t size;
+	struct fb_s* next;
+} fb_t;
+typedef struct ab_s {
+	size_t size;
+	struct ab_s* next;
+} ab_t;
+
 /* -----------------------------------------------*/
 /* Interface utilisateur de votre allocateur      */
 /* -----------------------------------------------*/
