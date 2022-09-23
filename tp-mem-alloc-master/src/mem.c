@@ -9,34 +9,13 @@
 #include "mem_space.h"
 #include "mem_os.h"
 #include <assert.h>
+#include <stdio.h>
 
 //-------------------------------------------------------------
 // Utilitaires (remplacer par Macros ou inline?)
 //-------------------------------------------------------------
 
-/**
- * Return a pointer to the first free block
- * or NULL if there is none
-**/
-fb* get_fb(){
-	return (fb_t*) *mem_space_get_addr();
-}
-
-/**
- * Return a pointer to the first alocated block
- * or NULL if there is none
-**/
-ab* get_ab(){
-	void * debutMem = mem_space_get_addr();
-	if(*debutMem==NULL || *debutMem!=(debutMem+sizeof(fb_t*)){
-		return (ab_t*) (debutMem+sizeof(fb_t*));
-	}
-	if((*debutMem)->size==mem_space_get_size() - sizeof(fb_t) - sizeof(fb_t*)){
-		return NULL;
-	}
-	return (ab_t*) debutMem + sizeof(fb_t) + sizeof(fb_t*) + (*debutMem)->size;
-}
-
+mem_fit_function_t *mem_fit;
 //-------------------------------------------------------------
 // mem_init
 //-------------------------------------------------------------
@@ -46,15 +25,24 @@ ab* get_ab(){
 **/
 void mem_init() {
 	void * debutMem = mem_space_get_addr();
-	//On cree le profier bloque de fb. 
-	fb_t bloqueVide = {mem_space_get_size() - sizeof(fb_t) - sizeof(fb_t*),NULL};
-	//On le stoque en debut de memoire en laissant la place pour un pointeur
-	*(debutMem+sizeof(fb_t*))=bloqueVide;
-	//On memorise son adresse dans l'espace qu'on a laisse au debut de la memoire
-	*debutMem = debutMem + (fb_t*);
+	//On cree le premier bloque de fb. 
+	mem_free_block_t bloqueVide = {mem_space_get_size() - sizeof(mem_free_block_t) - sizeof(mem_free_block_t) - sizeof(mem_busy_block_t),NULL};
+    printf("%lu \n",mem_space_get_size());
+	//On le stoque en debut de memoire en laissant la place pour les bloques fictif
+    *((mem_free_block_t*) debutMem+sizeof(mem_free_block_t)+sizeof(mem_busy_block_t))=bloqueVide;
+    //On cree les bloques fictif.
+    mem_free_block_t ficitfVide = {0,(mem_free_block_t*) debutMem+sizeof(mem_free_block_t)+sizeof(mem_busy_block_t)};
+    mem_busy_block_t fictifPlein = {0,NULL};
+
+	//On place les bloques fictif en memoire
+	*((mem_free_block_t*) debutMem) = ficitfVide;
+    *((mem_busy_block_t*) debutMem + sizeof(mem_free_block_t)) = fictifPlein;
+
 	//Et finalement on initialise la fonction de recherche
-	mem_set_fit_handler(mem_first_fit);
+	//mem_set_fit_handler(mem_first_fit);
 }
+
+
 
 //-------------------------------------------------------------
 // mem_alloc
@@ -62,10 +50,32 @@ void mem_init() {
 /**
  * Allocate a bloc of the given size.
 **/
-void *mem_alloc(size_t size) {
-	//TODO: implement
-	assert(! "NOT IMPLEMENTED !");
-    return NULL;
+
+void * mem_alloc(size_t size) {
+    void * debutMem = mem_space_get_addr();
+	mem_free_block_t* bloqueVidePrec = mem_fit(((mem_free_block_t*)debutMem),size);//On resois le precedant de celui qu'on allou
+    if(bloqueVidePrec==NULL){
+        printf("Pas la place!\n");
+        return NULL;
+    }
+    mem_busy_block_t* bloquePleinPrec = bloqueVidePrec + bloqueVidePrec->size + sizeof(mem_free_block_t);
+    mem_busy_block_t* bloquePleinSuiv = bloquePleinPrec->next;
+    while(bloquePleinSuiv < bloqueVidePrec->next){
+        bloquePleinPrec=bloquePleinSuiv;
+        bloquePleinSuiv=bloquePleinSuiv->next;
+    }
+    mem_busy_block_t newPlein = { size,bloquePleinSuiv } ;
+    if(bloqueVidePrec->size - size <= sizeof(mem_free_block_t)){
+        newPlein.size = bloqueVidePrec->size;
+        *(bloqueVidePrec->next) = newPlein;
+        return bloqueVidePrec->next + sizeof(newPlein);;
+    }
+    mem_free_block_t newVide  = { bloqueVidePrec->size - size - sizeof(mem_free_block_t), bloqueVidePrec->next->next } ;
+
+    *(bloqueVidePrec->next) = newPlein;
+    *(bloqueVidePrec->next + newPlein.size + sizeof(newPlein)) = newVide;
+
+    return bloqueVidePrec->next + sizeof(newPlein);
 }
 
 //-------------------------------------------------------------
@@ -93,26 +103,55 @@ void mem_free(void *zone) {
 // Itérateur(parcours) sur le contenu de l'allocateur
 // mem_show
 //-------------------------------------------------------------
-void mem_show(void (*print)(void *, size_t, int free)) {
-    //TODO: implement
-	assert(! "NOT IMPLEMENTED !");
+void mem_show(void (*print)(void * zone, size_t size, int free)) {
+    void * debutMem = mem_space_get_addr();
+
+    // On recupere un pointeur sur les deux files
+    mem_free_block_t* free = ((mem_free_block_t*)debutMem)->next;
+    mem_busy_block_t* busy = ((mem_busy_block_t*)debutMem + sizeof(mem_free_block_t))->next;
+
+    // Tant qu'il reste des blocs à traiter
+    while (free != NULL || busy != NULL) {
+
+        // Si il n'y a plus de bloc occupé ou que le bloc libre actuel est avant
+        if (busy == NULL || (free != NULL && free < busy)) {
+
+            // On affiche le bloc libre actuel et on passe au bloc libre suivant
+            print(free, free->size, 1);
+            free = free->next;
+        }
+        else
+        {
+            // Sinon on affiche le bloc occupé actuel et on passe au suivant
+            print(busy, busy->size, 0);
+            busy = busy->next;
+        }
+    }
 }
+
+
 
 //-------------------------------------------------------------
 // mem_fit
 //-------------------------------------------------------------
 void mem_set_fit_handler(mem_fit_function_t *mff) {
-	//TODO: implement
-	assert(! "NOT IMPLEMENTED !");
+	mem_fit = mff;
 }
 
 //-------------------------------------------------------------
 // Stratégies d'allocation
 //-------------------------------------------------------------
 mem_free_block_t *mem_first_fit(mem_free_block_t *first_free_block, size_t wanted_size) {
-    //TODO: implement
-	assert(! "NOT IMPLEMENTED !");
-	return NULL;
+    mem_free_block_t* free = first_free_block;
+    mem_free_block_t* suiv = free->next;
+    while(suiv!=NULL){
+        if(suiv->size>=wanted_size){
+            return(free);
+        }
+        free=suiv;
+        suiv=suiv->next;
+    }
+    return NULL;
 }
 //-------------------------------------------------------------
 mem_free_block_t *mem_best_fit(mem_free_block_t *first_free_block, size_t wanted_size) {

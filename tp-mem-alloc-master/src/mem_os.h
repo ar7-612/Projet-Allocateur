@@ -12,7 +12,15 @@
 #include <stdlib.h>
 
 //Definie la structure the bloc libre
+
+struct mem_free_block_s;
+struct mem_free_block_s {
+	size_t size;
+	struct mem_free_block_s* next;
+};
+
 typedef struct mem_free_block_s mem_free_block_t;
+typedef struct mem_free_block_s mem_busy_block_t;
 
 /* -----------------------------------------------*/
 /* Interface de gestion de votre allocateur       */
