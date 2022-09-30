@@ -15,6 +15,11 @@
 #define MAX_ALLOC (1 << 10)
 #define NB_TESTS 5
 
+void afficher_zone(void *adresse, size_t taille, int free) {
+    printf("Zone %7s, Adresse : %lu, Taille : %lu\n", free ? "libre" : "occupee",
+           (unsigned long)adresse, (unsigned long)taille);
+}
+
 // adresse par rapport au début de la mémoire
 void *relative_adr(void *adr) {
     return (void *)((char *)adr - (char *)mem_space_get_addr());
@@ -40,12 +45,18 @@ void *alloc_max(size_t estimate) {
     void *result;
     static size_t last = 0;
 
+    //mem_show(afficher_zone);
+    //printf("==================\n");
+
     while ((result = mem_alloc(estimate)) == NULL) {
         estimate--;
     }
     debug("Alloced %zu bytes at %p\n", estimate, relative_adr(result));
     if (last) {
         // Idempotence test
+        if (estimate != last){
+            //mem_show(afficher_zone);
+        }
         assert(estimate == last);
     } else {
         last = estimate;
@@ -82,6 +93,10 @@ int main(int argc, char *argv[]) {
         alloc5(ptr);
         my_free(&ptr[2]);
         my_free(&ptr[1]);
+
+        //mem_show(afficher_zone);
+        //printf("==================\n");
+
         ptr[1] = checked_alloc(2 * MAX_ALLOC);
         free5(ptr);
 

@@ -55,7 +55,6 @@ void * mem_alloc(size_t size) {
     void * debutMem = mem_space_get_addr();
 	mem_free_block_t* bloqueVidePrec = mem_fit(((mem_free_block_t*)debutMem),size);//On resois le precedant de celui qu'on allou
     if(bloqueVidePrec==NULL){
-        printf("Pas la place!\n");
         return NULL;
     }
     //On cherche les bloques plein avant et apres le bloque libre
@@ -83,7 +82,7 @@ void * mem_alloc(size_t size) {
         newPlein->size = prevVideSize;
     } else {
         nextVide = (mem_free_block_t*)((void*)newPlein + size + sizeof(*newPlein));
-        nextVide->size = prevVideSize - size - sizeof(*newPlein) - sizeof(mem_free_block_t);
+        nextVide->size = prevVideSize - size - sizeof(*newPlein);
         nextVide->next = bloqueVidePrec->next->next;
         newPlein->size = size;
     }
@@ -96,11 +95,8 @@ void * mem_alloc(size_t size) {
 //-------------------------------------------------------------
 // mem_get_size
 //-------------------------------------------------------------
-size_t mem_get_size(void * zone)
-{
-    //TODO: implement
-	assert(! "NOT IMPLEMENTED !");
-    return 0;
+size_t mem_get_size(void * zone) {
+    return ((mem_busy_block_t*)zone)->size;
 }
 
 //-------------------------------------------------------------
@@ -110,8 +106,50 @@ size_t mem_get_size(void * zone)
  * Free an allocaetd bloc.
 **/
 void mem_free(void *zone) {
-    //TODO: implement
-	assert(! "NOT IMPLEMENTED !");
+
+    zone = zone - sizeof(mem_busy_block_t);
+    void * debutMem = mem_space_get_addr();
+
+    //Verfivier validite zone
+    if((zone < debutMem + sizeof(mem_busy_block_t) + sizeof(mem_free_block_t))
+     ||(zone > debutMem + mem_space_get_size())){
+        fprintf(stderr,"Ahem. Non. (seg fault)\n");
+        exit(-1);
+    }
+
+    //Recherche des bloques nessessaire
+    mem_free_block_t* bloqueFreePrec = (mem_free_block_t*)(debutMem);
+    mem_free_block_t* bloqueFreeSuiv = bloqueFreePrec->next;
+    mem_busy_block_t* bloquePleinPrec = (mem_busy_block_t*)(debutMem + sizeof(mem_free_block_t));
+    mem_busy_block_t* bloquePleinSuiv = bloquePleinPrec->next;
+
+    while(bloqueFreeSuiv!=NULL && (void*)bloqueFreeSuiv < zone){
+        bloqueFreePrec=bloqueFreeSuiv;
+        bloqueFreeSuiv=bloqueFreeSuiv->next;
+    }
+    while(bloquePleinSuiv!=NULL && (void*)bloquePleinSuiv != zone){
+        bloquePleinPrec=bloquePleinSuiv;
+        bloquePleinSuiv=bloquePleinSuiv->next;
+    }
+    bloquePleinSuiv=bloquePleinSuiv->next;
+
+    //Si pas de fusion
+    bloquePleinPrec->next = bloquePleinSuiv;
+    bloqueFreePrec->next = zone;
+    ((mem_free_block_t*)zone)->next = bloqueFreeSuiv;
+
+    //Si fusion apres
+    if(zone + sizeof(mem_free_block_t) + ((mem_free_block_t*)zone)->size == bloqueFreeSuiv){
+        ((mem_free_block_t*)zone)->size += sizeof(mem_free_block_t) + bloqueFreeSuiv->size;
+        ((mem_free_block_t*)zone)->next = bloqueFreeSuiv->next;
+    }
+    //Si fusion avant
+    if((void*)bloqueFreePrec + sizeof(mem_free_block_t) + bloqueFreePrec->size == zone){
+        bloqueFreePrec->size += sizeof(mem_free_block_t) + ((mem_free_block_t*)zone)->size;
+        bloqueFreePrec->next = ((mem_free_block_t*)zone)->next;
+    }
+
+    
 }
 
 //-------------------------------------------------------------
@@ -132,13 +170,13 @@ void mem_show(void (*print)(void * zone, size_t size, int free)) {
         if (busy == NULL || (free != NULL && free < busy)) {
 
             // On affiche le bloc libre actuel et on passe au bloc libre suivant
-            print(free, free->size, 1);
+            print(free, free->size + sizeof(mem_busy_block_t), 1);
             free = free->next;
         }
         else
         {
             // Sinon on affiche le bloc occupé actuel et on passe au suivant
-            print(busy, busy->size, 0);
+            print(busy, busy->size + sizeof(mem_free_block_t), 0);
             busy = busy->next;
         }
     }
@@ -161,14 +199,12 @@ mem_free_block_t *mem_first_fit(mem_free_block_t *first_free_block, size_t wante
     mem_free_block_t* suiv = free->next;
     while(suiv!=NULL){
         if(suiv->size>=wanted_size){
-            printf("fin memfit \n");
             return(free);
         }
         free=suiv;
         suiv=suiv->next;
      
     }
-    printf("fin memfit err\n");
     return NULL;
 }
 //-------------------------------------------------------------
