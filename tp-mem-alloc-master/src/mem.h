@@ -10,6 +10,11 @@
 
 #include <stddef.h>
 
+/*
+Pour les operations sur pointeur, on fais attention a manipuler des void*
+
+*/
+
 
 /* -----------------------------------------------*/
 /* Interface utilisateur de votre allocateur      */
