@@ -194,6 +194,27 @@ void mem_set_fit_handler(mem_fit_function_t *mff) {
 //-------------------------------------------------------------
 // Stratégies d'allocation
 //-------------------------------------------------------------
+
+
+mem_free_block_t *general_fit(mem_free_block_t *first_free_block, size_t wanted_size, int strategie(int,int)){
+	mem_free_block_t* free = first_free_block;
+    mem_free_block_t* suiv = free->next;
+	mem_free_block_t* butAdr = NULL;
+	size_t but;
+    while(suiv!=NULL){
+        if(suiv->size>=wanted_size){
+            if(butAdr==NULL || strategie(suiv->size,but)){
+				butAdr=free;
+				but=suiv->size;
+			}
+        }
+        free=suiv;
+        suiv=suiv->next;
+     
+    }
+    return butAdr;
+}
+
 mem_free_block_t *mem_first_fit(mem_free_block_t *first_free_block, size_t wanted_size) {
     mem_free_block_t* free = first_free_block;
     mem_free_block_t* suiv = free->next;
@@ -207,16 +228,15 @@ mem_free_block_t *mem_first_fit(mem_free_block_t *first_free_block, size_t wante
     }
     return NULL;
 }
+
 //-------------------------------------------------------------
 mem_free_block_t *mem_best_fit(mem_free_block_t *first_free_block, size_t wanted_size) {
-    //TODO: implement
-	assert(! "NOT IMPLEMENTED !");
-	return NULL;
+    int f(int a,int b){return a<b;}
+	return general_fit(first_free_block,wanted_size,f);
 }
 
 //-------------------------------------------------------------
 mem_free_block_t *mem_worst_fit(mem_free_block_t *first_free_block, size_t wanted_size) {
-    //TODO: implement
-	assert(! "NOT IMPLEMENTED !");
-	return NULL;
+    int f(int a,int b){return a>b;}
+	return general_fit(first_free_block,wanted_size,f);
 }
