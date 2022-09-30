@@ -43,6 +43,31 @@ void mem_init() {
 }
 
 
+//-------------------------------------------------------------
+// mem_realloc
+//-------------------------------------------------------------
+/**
+ * Reallocate a bloc of the given size.
+**/
+void *mem_realloc(void *ptr, size_t size){
+	//Version simple
+	char* newP=NULL;
+	if(size==0){
+		mem_free(ptr);
+		return NULL;
+	}
+	newP = mem_alloc(size);//Toujours une nouvelle allocation
+	if(newP==NULL){
+		return NULL;
+	}
+	for(int i=0;i<size;i++){//Parcours des cases en trop
+		newP[i]=((char*)ptr)[i];
+	}
+	mem_free(ptr);
+	return newP;
+
+}
+
 
 //-------------------------------------------------------------
 // mem_alloc
@@ -110,10 +135,10 @@ void mem_free(void *zone) {
     zone = zone - sizeof(mem_busy_block_t);
     void * debutMem = mem_space_get_addr();
 
-    //Verfivier validite zone
+    //Verfivie que la zone est en memoire
     if((zone < debutMem + sizeof(mem_busy_block_t) + sizeof(mem_free_block_t))
      ||(zone > debutMem + mem_space_get_size())){
-        fprintf(stderr,"Ahem. Non. (seg fault)\n");
+        fprintf(stderr,"Ahem. Non. (segmentation fault)\n");
         exit(-1);
     }
 
@@ -131,6 +156,10 @@ void mem_free(void *zone) {
         bloquePleinPrec=bloquePleinSuiv;
         bloquePleinSuiv=bloquePleinSuiv->next;
     }
+	if(bloquePleinSuiv!=zone){
+		fprintf(stderr,"Euuuu, j'ai bien peur que cette zone soit deja libre... (double free or coruption)\n");
+        exit(-2);
+	}
     bloquePleinSuiv=bloquePleinSuiv->next;
 
     //Si pas de fusion
