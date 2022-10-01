@@ -11,10 +11,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-//-------------------------------------------------------------
-// Utilitaires (remplacer par Macros ou inline?)
-//-------------------------------------------------------------
-
 mem_fit_function_t *mem_fit;
 
 /**
@@ -32,6 +28,7 @@ void checkOverflow (void * p){
 			exit(-3);
 		}
 	}
+	printf("char : %d %d\n",((mem_busy_block_t*)p)->markerPost,MARKER_POST);
 	if(((mem_busy_block_t*)p)->markerPost != MARKER_POST){
 		fprintf(stderr,"Overflow detected\n");
 		exit(-3);
@@ -151,7 +148,7 @@ void *mem_realloc(void *ptr, size_t size){
 	if(newP==NULL){
 		return NULL;
 	}
-	for(int i=0;i<size;i++){//Parcours des cases en trop
+	for(int i=0;i<size;i++){//Parcours de cases en trop
 		((char*)newP)[i]=((char*)ptr)[i];
 	}
 	mem_free(ptr);

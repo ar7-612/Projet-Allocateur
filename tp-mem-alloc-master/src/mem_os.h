@@ -21,8 +21,8 @@ struct mem_free_block_s {
 	char markerPost;
 };
 
-#define MARKER_PRE '\a'
-#define MARKER_POST '\a'
+#define MARKER_PRE 42
+#define MARKER_POST 24
 
 typedef struct mem_free_block_s mem_free_block_t;
 typedef struct mem_free_block_s mem_busy_block_t;
