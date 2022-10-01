@@ -15,9 +15,14 @@
 
 struct mem_free_block_s;
 struct mem_free_block_s {
+	char markerPre;
 	size_t size;
 	struct mem_free_block_s* next;
+	char markerPost;
 };
+
+#define MARKER_PRE '\a'
+#define MARKER_POST '\a'
 
 typedef struct mem_free_block_s mem_free_block_t;
 typedef struct mem_free_block_s mem_busy_block_t;

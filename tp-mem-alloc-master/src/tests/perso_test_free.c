@@ -63,18 +63,20 @@ int main(int argc, char *argv[]) {
     
 
     int nbTest = 16;
-    void* tabP[16];
+    int* tabP[16];
     int tabFree[16]={1,3,2,5,4,6,9,8,10,15,13,12,11,7,14,0};
     
 
     printf("\n");
     mem_show(&afficher_zone);
     for(int i=0;i<nbTest;i++){
-        tabP[i]=mem_alloc(16);
+        tabP[i]=mem_alloc(sizeof(int));
+		*tabP[i]=i;
     }
     printf("\n");
     mem_show(&afficher_zone);
     for(int i=0;i<nbTest;i++){
+		printf("%d ",*tabP[tabFree[i]]);
         mem_free(tabP[tabFree[i]]);
     }
     printf("\n");

@@ -16,6 +16,28 @@
 //-------------------------------------------------------------
 
 mem_fit_function_t *mem_fit;
+
+/**
+ * Exit if one of the marker around p is invalid. Doesn't detect all overflow
+**/
+void checkOverflow (void * p){
+	if(p==NULL){
+		return;
+	}
+	void * bloqueSup = p + ((mem_busy_block_t*)p)->size + sizeof(mem_busy_block_t);
+	//Si pas le dernier bloque
+	if(bloqueSup < mem_space_get_addr() + mem_space_get_size()){
+		if(((mem_busy_block_t*)bloqueSup)->markerPre != MARKER_PRE){
+			fprintf(stderr,"Overflow detected\n");
+			exit(-3);
+		}
+	}
+	if(((mem_busy_block_t*)p)->markerPost != MARKER_POST){
+		fprintf(stderr,"Overflow detected\n");
+		exit(-3);
+	}
+}
+
 //-------------------------------------------------------------
 // mem_init
 //-------------------------------------------------------------
@@ -26,13 +48,13 @@ mem_fit_function_t *mem_fit;
 void mem_init() {
 	void * debutMem = mem_space_get_addr();
 	//On cree le premier bloque de fb. 
-	mem_free_block_t bloqueVide = {mem_space_get_size() - sizeof(mem_free_block_t) - sizeof(mem_free_block_t) - sizeof(mem_busy_block_t),NULL};
+	mem_free_block_t bloqueVide = {MARKER_PRE,mem_space_get_size() - sizeof(mem_free_block_t) - sizeof(mem_free_block_t) - sizeof(mem_busy_block_t),NULL,MARKER_POST};
     //printf("%lu \n",mem_space_get_size());
 	//On le stoque en debut de memoire en laissant la place pour les bloques fictif
     *((mem_free_block_t*) (debutMem+sizeof(mem_free_block_t)+sizeof(mem_busy_block_t)))=bloqueVide;
     //On cree les bloques fictif.
-    mem_free_block_t ficitfVide = {0,(mem_free_block_t*) (debutMem+sizeof(mem_free_block_t)+sizeof(mem_busy_block_t))};
-    mem_busy_block_t fictifPlein = {0,NULL};
+    mem_free_block_t ficitfVide = {MARKER_PRE,0,(mem_free_block_t*) (debutMem+sizeof(mem_free_block_t)+sizeof(mem_busy_block_t)),MARKER_POST};
+    mem_busy_block_t fictifPlein = {MARKER_PRE,0,NULL,MARKER_POST};
 
 	//On place les bloques fictif en memoire
 	*((mem_free_block_t*) debutMem) = ficitfVide;
@@ -82,11 +104,15 @@ void * mem_alloc(size_t size) {
         nextVide = (mem_free_block_t*)((void*)newPlein + size + sizeof(*newPlein));
         nextVide->size = prevVideSize - size - sizeof(*newPlein);
         nextVide->next = bloqueVidePrec->next->next;
+		nextVide->markerPre = MARKER_PRE;
+		nextVide->markerPost = MARKER_POST;
+		
         newPlein->size = size;
     }
     newPlein->next = bloquePleinSuiv;
     bloqueVidePrec->next = nextVide;
-
+	
+	checkOverflow(newPlein);
     return ((void*)newPlein + sizeof(*newPlein));
 }
 
@@ -116,7 +142,7 @@ void *mem_calloc(size_t count, size_t size){
 **/
 void *mem_realloc(void *ptr, size_t size){
 	//Version simple
-	char* newP=NULL;
+	void* newP=NULL;
 	if(size==0){
 		mem_free(ptr);
 		return NULL;
@@ -126,7 +152,7 @@ void *mem_realloc(void *ptr, size_t size){
 		return NULL;
 	}
 	for(int i=0;i<size;i++){//Parcours des cases en trop
-		newP[i]=((char*)ptr)[i];
+		((char*)newP)[i]=((char*)ptr)[i];
 	}
 	mem_free(ptr);
 	return newP;
@@ -177,6 +203,11 @@ void mem_free(void *zone) {
         exit(-2);
 	}
     bloquePleinSuiv=bloquePleinSuiv->next;
+	
+	//On verifie l'integrite des 3 bloques memoires
+	checkOverflow(zone);
+	checkOverflow(bloquePleinPrec);
+	checkOverflow(bloquePleinSuiv);
 
     //Si pas de fusion
     bloquePleinPrec->next = bloquePleinSuiv;
