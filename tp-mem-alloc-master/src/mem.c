@@ -60,6 +60,17 @@ void mem_init() {
 	mem_set_fit_handler(mem_first_fit);
 }
 
+/**
+ * alligne sur 32 bits
+**/
+size_t aligned32 (size_t size){
+	if((size & 0x11) != 0){
+		size_t tmp = 4;
+		size = (size & ~0x11) + tmp;
+	}
+	return size;
+}
+
 //-------------------------------------------------------------
 // mem_alloc
 //-------------------------------------------------------------
@@ -68,13 +79,6 @@ void mem_init() {
 **/
 
 void * mem_alloc(size_t size) {
-	//alignement sur 32 bits
-	if((size & 0x11) != 0){
-		size_t tmp = 4;
-		size = (size & ~0x11) + tmp;
-	}
-	//fprintf(stderr,"%lu\n",size);
-	
     void * debutMem = mem_space_get_addr();
 	mem_free_block_t* bloqueVidePrec = mem_fit(((mem_free_block_t*)debutMem),size);//On resois le precedant de celui qu'on allou
     if(bloqueVidePrec==NULL){
@@ -183,8 +187,9 @@ void mem_free(void *zone) {
     //Verfivie que la zone est en memoire
     if((zone < debutMem + sizeof(mem_busy_block_t) + sizeof(mem_free_block_t))
      ||(zone > debutMem + mem_space_get_size())){
-        fprintf(stderr,"Ahem. Non. (segmentation fault)\n");
-        exit(-1);
+		return;
+        //fprintf(stderr,"Ahem. Non. (segmentation fault)\n");
+        //exit(-1);
     }
 
     //Recherche des bloques nessessaire

@@ -93,8 +93,9 @@ void arriere(void* tabP[16]){
 }
 
 int main(int argc, char *argv[]) {
-    void* tabP[16];
+    //Commentez les mem_free pour observer l'etat de la memoire
+	void* tabP[16];	
 	arriere(tabP);
-	//avant(tabP);
+	avant(tabP);
     return 0;
 }

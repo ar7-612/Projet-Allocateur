@@ -22,7 +22,6 @@ void afficher_zone_occupee(void *adresse, size_t taille, int free) {
 }
 
 int main(int argc, char *argv[]) {
-    mem_init();
-    mem_show(&afficher_zone);
+
     return 0;
 }

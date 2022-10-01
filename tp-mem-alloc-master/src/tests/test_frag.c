@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
             printf("Libération %d\n", free);
             assert(allocs[free] <
                    (void *)((char *)mem_space_get_addr() + mem_space_get_size()));
-            mem_free(allocs[free]);
+			mem_free(allocs[free]);
             allocs[free] = NULL;
         }
         size = (rand() % MAX_BLOC) + 1;

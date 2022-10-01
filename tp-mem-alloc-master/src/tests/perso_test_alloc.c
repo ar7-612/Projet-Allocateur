@@ -26,6 +26,7 @@ void printRet(void * p){
         printf("Pas de place!\n");
     }
     mem_show(&afficher_zone);
+	printf("\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -39,8 +40,7 @@ int main(int argc, char *argv[]) {
 
     mem_init();
 
-
-    printRet(mem_alloc(127910));
+    printRet(mem_alloc(127900));
     printRet(mem_alloc(1));
 
     return 0;
