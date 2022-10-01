@@ -28,7 +28,6 @@ void checkOverflow (void * p){
 			exit(-3);
 		}
 	}
-	printf("char : %d %d\n",((mem_busy_block_t*)p)->markerPost,MARKER_POST);
 	if(((mem_busy_block_t*)p)->markerPost != MARKER_POST){
 		fprintf(stderr,"Overflow detected\n");
 		exit(-3);
@@ -69,6 +68,13 @@ void mem_init() {
 **/
 
 void * mem_alloc(size_t size) {
+	//alignement sur 32 bits
+	if((size & 0x11) != 0){
+		size_t tmp = 4;
+		size = (size & ~0x11) + tmp;
+	}
+	//fprintf(stderr,"%lu\n",size);
+	
     void * debutMem = mem_space_get_addr();
 	mem_free_block_t* bloqueVidePrec = mem_fit(((mem_free_block_t*)debutMem),size);//On resois le precedant de celui qu'on allou
     if(bloqueVidePrec==NULL){

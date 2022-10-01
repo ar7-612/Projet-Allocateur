@@ -10,19 +10,20 @@
 
 //include stdlib pour definition du type size_t
 #include <stdlib.h>
+#include <stdint.h>
 
 //Definie la structure the bloc libre
 
 struct mem_free_block_s;
 struct mem_free_block_s {
-	char markerPre;
+	uint64_t markerPre;
 	size_t size;
 	struct mem_free_block_s* next;
-	char markerPost;
+	uint64_t markerPost;
 };
 
-#define MARKER_PRE 42
-#define MARKER_POST 24
+#define MARKER_PRE ((uint64_t) 0x4242424242424242)
+#define MARKER_POST ((uint64_t) 0x2424242424242424)
 
 typedef struct mem_free_block_s mem_free_block_t;
 typedef struct mem_free_block_s mem_busy_block_t;
