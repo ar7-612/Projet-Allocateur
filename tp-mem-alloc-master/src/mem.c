@@ -42,33 +42,6 @@ void mem_init() {
 	mem_set_fit_handler(mem_first_fit);
 }
 
-
-//-------------------------------------------------------------
-// mem_realloc
-//-------------------------------------------------------------
-/**
- * Reallocate a bloc of the given size.
-**/
-void *mem_realloc(void *ptr, size_t size){
-	//Version simple
-	char* newP=NULL;
-	if(size==0){
-		mem_free(ptr);
-		return NULL;
-	}
-	newP = mem_alloc(size);//Toujours une nouvelle allocation
-	if(newP==NULL){
-		return NULL;
-	}
-	for(int i=0;i<size;i++){//Parcours des cases en trop
-		newP[i]=((char*)ptr)[i];
-	}
-	mem_free(ptr);
-	return newP;
-
-}
-
-
 //-------------------------------------------------------------
 // mem_alloc
 //-------------------------------------------------------------
@@ -115,6 +88,49 @@ void * mem_alloc(size_t size) {
     bloqueVidePrec->next = nextVide;
 
     return ((void*)newPlein + sizeof(*newPlein));
+}
+
+//-------------------------------------------------------------
+// mem_calloc
+//-------------------------------------------------------------
+/**
+ * allocate a bloc of the count*size Bytes? and initialise all this memorie to zero
+**/
+void *mem_calloc(size_t count, size_t size){
+	//Version simple
+	void* p = mem_alloc(count*size);
+	if(p==NULL){
+		return NULL;
+	}
+	for(size_t i=0;i<count*size;i++){
+		((char*)p)[i]=0;
+	}
+	return p;
+}
+
+//-------------------------------------------------------------
+// mem_realloc
+//-------------------------------------------------------------
+/**
+ * Reallocate a bloc of the given size.
+**/
+void *mem_realloc(void *ptr, size_t size){
+	//Version simple
+	char* newP=NULL;
+	if(size==0){
+		mem_free(ptr);
+		return NULL;
+	}
+	newP = mem_alloc(size);//Toujours une nouvelle allocation
+	if(newP==NULL){
+		return NULL;
+	}
+	for(int i=0;i<size;i++){//Parcours des cases en trop
+		newP[i]=((char*)ptr)[i];
+	}
+	mem_free(ptr);
+	return newP;
+
 }
 
 //-------------------------------------------------------------
