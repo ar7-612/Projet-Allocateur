@@ -12,12 +12,10 @@ void afficher_zone(void *adresse, size_t taille, int free) {
            (unsigned long)adresse, (unsigned long)taille);
 }
 
-
-
 int main(int argc, char *argv[]) {
-	int* tabP[NB_ALLOC_MAX];	
-    mem_init();
+	mem_init();
     mem_set_fit_handler(mem_first_fit);
+    int* tabP[NB_ALLOC_MAX];	
 	
 	printf("%lu\n",sizeof(mem_free_block_t));
 		
@@ -45,6 +43,6 @@ int main(int argc, char *argv[]) {
 	
     printf("\n");
     mem_show(&afficher_zone);
-    
-    return 0;
+	
+	return 0;
 }

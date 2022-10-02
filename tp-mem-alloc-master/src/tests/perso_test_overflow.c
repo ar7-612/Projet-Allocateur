@@ -68,13 +68,13 @@ void avant(void* tabP[16]){
 	tabP[1] = mem_alloc(sizeof(char));
 	tabP[2] = mem_alloc(sizeof(char));
 	
-	*((char*)(tabP[0])) = 1;
-	*((char*)(tabP[1])) = 2;
-	*((char*)(tabP[2])) = 3;
+	*((char*)(tabP[0])) = 10;
+	*((char*)(tabP[1])) = 20;
+	*((char*)(tabP[2])) = 30;
 	printMem(tabP);
 	*((unsigned int*)(tabP[1]-1)) = (unsigned int) -1;
 	printMem(tabP);
-	mem_free(tabP[1]);
+	//mem_free(tabP[1]);
 }
 
 void arriere(void* tabP[16]){
@@ -83,13 +83,13 @@ void arriere(void* tabP[16]){
 	tabP[1] = mem_alloc(sizeof(char));
 	tabP[2] = mem_alloc(sizeof(char));
 	
-	*((char*)(tabP[0])) = 1;
-	*((char*)(tabP[1])) = 2;
-	*((char*)(tabP[2])) = 3;
+	*((char*)(tabP[0])) = 10;
+	*((char*)(tabP[1])) = 20;
+	*((char*)(tabP[2])) = 30;
 	printMem(tabP);
 	*((unsigned int*)(tabP[1]+1)) = (unsigned int) -1;
 	printMem(tabP);
-	mem_free(tabP[1]);
+	//mem_free(tabP[1]);
 }
 
 int main(int argc, char *argv[]) {

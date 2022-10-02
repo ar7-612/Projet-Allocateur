@@ -61,12 +61,17 @@ void mem_init() {
 }
 
 /**
- * alligne sur 32 bits
+ * alligne sur 32 ou 64 bits en fonction de la machine.
 **/
-size_t aligned32 (size_t size){
-	if((size & 0x11) != 0){
-		size_t tmp = 4;
-		size = (size & ~0x11) + tmp;
+size_t aligned (size_t size){
+	if(IS64BITS){
+		if((size & 0b111) != 0){
+			size = (size & ~0b111) + 0b1000;
+		}
+	} else {
+		if((size & 0b11) != 0){
+			size = (size & ~0b11) + 0b100;
+		}
 	}
 	return size;
 }
@@ -79,6 +84,7 @@ size_t aligned32 (size_t size){
 **/
 
 void * mem_alloc(size_t size) {
+	size = aligned(size);
     void * debutMem = mem_space_get_addr();
 	mem_free_block_t* bloqueVidePrec = mem_fit(((mem_free_block_t*)debutMem),size);//On resois le precedant de celui qu'on allou
     if(bloqueVidePrec==NULL){
@@ -180,7 +186,6 @@ size_t mem_get_size(void * zone) {
  * Free an allocaetd bloc.
 **/
 void mem_free(void *zone) {
-
     zone = zone - sizeof(mem_busy_block_t);
     void * debutMem = mem_space_get_addr();
 

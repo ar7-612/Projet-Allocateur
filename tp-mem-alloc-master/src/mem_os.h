@@ -8,6 +8,8 @@
 #ifndef MEM_OS_H
 #define MEM_OS_H
 
+#define IS64BITS 1
+
 //include stdlib pour definition du type size_t
 #include <stdlib.h>
 #include <stdint.h>
@@ -16,14 +18,14 @@
 
 struct mem_free_block_s;
 struct mem_free_block_s {
-	uint64_t markerPre;
+	size_t markerPre;
 	size_t size;
 	struct mem_free_block_s* next;
-	uint64_t markerPost;
+	size_t markerPost;
 };
 
-#define MARKER_PRE ((uint64_t) 0x4242424242424242)
-#define MARKER_POST ((uint64_t) 0x2424242424242424)
+#define MARKER_PRE ((size_t) 0x4242424242424242)
+#define MARKER_POST ((size_t) 0x2424242424242424)
 
 typedef struct mem_free_block_s mem_free_block_t;
 typedef struct mem_free_block_s mem_busy_block_t;

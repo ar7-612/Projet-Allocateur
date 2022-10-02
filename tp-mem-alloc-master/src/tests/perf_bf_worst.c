@@ -12,12 +12,10 @@ void afficher_zone(void *adresse, size_t taille, int free) {
            (unsigned long)adresse, (unsigned long)taille);
 }
 
-
-
 int main(int argc, char *argv[]) {
-	int* tabP[NB_ALLOC_MAX];	
-    mem_init();
+	mem_init();
     mem_set_fit_handler(mem_best_fit);
+	int* tabP[NB_ALLOC_MAX];	
 	
 	for(int j=0;j<10;j++){
 		tabP[0] = mem_alloc(64);
