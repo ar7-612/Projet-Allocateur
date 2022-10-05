@@ -12,7 +12,6 @@
 
 /*
 Pour les operations sur pointeur, on fais attention a manipuler des void*
-
 */
 
 

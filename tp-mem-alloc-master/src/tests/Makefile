@@ -16,7 +16,7 @@ LDFLAGS=
 
 ###############################################################################
 # targets
-TESTS=test_init test_fusion test_fusion_bzero test_frag test_base test_base_bzero test_cheese test_cheese_bzero perso_test_init perso_test_alloc perso_test_free perso_test_realloc perso_test_calloc perso_test_overflow perf_ff_worst perf_bf_worst perf_bf_best  
+TESTS=test_init test_fusion test_fusion_bzero test_frag test_base test_base_bzero test_cheese test_cheese_bzero perso_test_init perso_test_aligne perso_test_alloc perso_test_free perso_test_realloc perso_test_calloc perso_test_overflow perf_ff_worst perf_bf_worst perf_bf_best perf_ff_best 
 PROGRAMS=$(TESTS)
 
 ###############################################################################

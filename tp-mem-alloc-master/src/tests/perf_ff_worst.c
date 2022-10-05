@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     int* tabP[NB_ALLOC_MAX];	
 	
 	printf("%lu\n",sizeof(mem_free_block_t));
-		
+			
 	tabP[0] = mem_alloc(300);
 	for(int i=0;i<10;i++){
 		tabP[i] = mem_alloc(200);

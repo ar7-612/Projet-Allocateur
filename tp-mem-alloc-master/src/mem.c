@@ -19,8 +19,10 @@ mem_fit_function_t *mem_fit;
 void checkOverflow (void * p){
 	if(p==NULL){
 		return;
-	}
+	} 
+
 	void * bloqueSup = p + ((mem_busy_block_t*)p)->size + sizeof(mem_busy_block_t);
+
 	//Si pas le dernier bloque
 	if(bloqueSup < mem_space_get_addr() + mem_space_get_size()){
 		if(((mem_busy_block_t*)bloqueSup)->markerPre != MARKER_PRE){
@@ -28,6 +30,7 @@ void checkOverflow (void * p){
 			exit(-3);
 		}
 	}
+
 	if(((mem_busy_block_t*)p)->markerPost != MARKER_POST){
 		fprintf(stderr,"Overflow detected\n");
 		exit(-3);
@@ -65,12 +68,14 @@ void mem_init() {
 **/
 size_t aligned (size_t size){
 	if(IS64BITS){
-		if((size & 0b111) != 0){
-			size = (size & ~0b111) + 0b1000;
+		if((size & 0b111) != 0){//Si n'est pas alignee sur 64 bits (8 octets)
+			size &=  ~0b111;
+			size += 0b1000;
 		}
 	} else {
-		if((size & 0b11) != 0){
-			size = (size & ~0b11) + 0b100;
+		if((size & 0b11) != 0){//Si n'est pas alignee sur 32 bits (4 octets)
+			size &= ~0b11;
+			size += 0b100;
 		}
 	}
 	return size;
@@ -126,6 +131,7 @@ void * mem_alloc(size_t size) {
     bloqueVidePrec->next = nextVide;
 	
 	checkOverflow(newPlein);
+	
     return ((void*)newPlein + sizeof(*newPlein));
 }
 
@@ -187,7 +193,13 @@ size_t mem_get_size(void * zone) {
 **/
 void mem_free(void *zone) {
     zone = zone - sizeof(mem_busy_block_t);
+    
     void * debutMem = mem_space_get_addr();
+
+    if((unsigned long)zone != aligned((unsigned long)zone)){
+        fprintf(stderr,"Merde\n");
+        exit(-50);
+    }
 
     //Verfivie que la zone est en memoire
     if((zone < debutMem + sizeof(mem_busy_block_t) + sizeof(mem_free_block_t))
@@ -212,7 +224,7 @@ void mem_free(void *zone) {
         bloquePleinSuiv=bloquePleinSuiv->next;
     }
 	if(bloquePleinSuiv!=zone){
-		fprintf(stderr,"Euuuu, j'ai bien peur que cette zone soit deja libre... (double free or coruption)\n");
+		fprintf(stderr,"Euuuu, j'ai bien peur que cette zone soit deja libre... (double free or corruption)\n");
         exit(-2);
 	}
     bloquePleinSuiv=bloquePleinSuiv->next;

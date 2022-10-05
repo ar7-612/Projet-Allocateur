@@ -15,21 +15,23 @@ void afficher_zone(void *adresse, size_t taille, int free) {
 int main(int argc, char *argv[]) {
 	mem_init();
     mem_set_fit_handler(mem_best_fit);
-	int* tabP[NB_ALLOC_MAX];	
+    int* tabP[NB_ALLOC_MAX];
 	
-	for(int j=0;j<10;j++){
-		tabP[0] = mem_alloc(64);
-		tabP[1] = mem_alloc(64);
-		tabP[2] = mem_alloc(64);
-		mem_free(tabP[0]);
-		mem_free(tabP[1]);
-		tabP[3] = mem_alloc(100);
+	printf("%lu\n",sizeof(mem_free_block_t));
+	
+	//On creer des bloque de taille 200
+	for(int i=0;i<10;i++){
+		tabP[i] = mem_alloc(200);
 	}
-	
-	
-	
+
+	//On libere ces bloque en partant de la fin puis on alloue des bloques de taille 150
+	for(int i=9;i>=0;i--){
+		mem_free(tabP[i]);
+		tabP[i] = mem_alloc(150);
+	}
+
     printf("\n");
     mem_show(&afficher_zone);
-    
-    return 0;
+	
+	return 0;
 }

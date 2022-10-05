@@ -18,27 +18,27 @@ int main(int argc, char *argv[]) {
     int* tabP[NB_ALLOC_MAX];
 	
 	printf("%lu\n",sizeof(mem_free_block_t));
-		
+	
+	//On creer des trous de taille 200 puis de taille 150
 	tabP[0] = mem_alloc(300);
 	for(int i=0;i<10;i++){
 		tabP[i] = mem_alloc(200);
-		tabP[0] = mem_alloc(300);
+		mem_alloc(300);
 	}
 	for(int i=0;i<10;i++){
 		tabP[i+10] = mem_alloc(150);
-		tabP[0] = mem_alloc(300);
+		mem_alloc(300);
 	}
-	
 	for(int i=0;i<20;i++){
 		mem_free(tabP[i]);
 	}
 	
-	
+	//On Place des bloque de taille 150 puis 200
 	for(int i=0;i<10;i++){
-		tabP[0] = mem_alloc(150);
+		mem_alloc(150);
 	}
 	for(int i=0;i<10;i++){
-		tabP[0] = mem_alloc(200);
+		mem_alloc(200);
 	}
 	
     printf("\n");
