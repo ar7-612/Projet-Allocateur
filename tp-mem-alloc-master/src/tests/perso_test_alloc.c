@@ -11,16 +11,6 @@ void afficher_zone(void *adresse, size_t taille, int free) {
            (unsigned long)adresse, (unsigned long)taille);
 }
 
-void afficher_zone_libre(void *adresse, size_t taille, int free) {
-    if (free)
-        afficher_zone(adresse, taille, 1);
-}
-
-void afficher_zone_occupee(void *adresse, size_t taille, int free) {
-    if (!free)
-        afficher_zone(adresse, taille, 0);
-}
-
 void printRet(void * p){
     if(p==NULL){
         printf("Pas de place!\n");
